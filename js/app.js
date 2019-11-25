@@ -1,39 +1,34 @@
-const estudiante = [];
+const estudiantes = [];
 
 $(document).ready(function() {
 
-  limpiarInputs();
   limpiarErrores();
+  limpiarInputs();
   mostrarTabla();
 
   $('#formulario').on('submit', function(e) {
-    e.preventDefault(); // Evita que se envíe el formulario
-    var data = $('#formulario :input').serializeArray();
-    console.log('CACO87');
-    console.log(estudiante);
+    e.preventDefault();
   });
 
+  $('#restablecer').on('click', function() {
+    restablecer();
+  });
 });  // Document.Ready
 
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■    FUNCIONES    ■■■■■■■■■■■■■■■■■■■■■■■■■■
 
-// ■■■■■■■■■■■■■■■■■■■■■■■■■■    FUNCIONES EXTERNAS    ■■■■■■■■■■■■■■■■■■■■■■■■■■
-
-// function iniciarSaludo() {
-//   alert('Hola Caco 87!');
-// }
+function restablecer() {
+  $('#codigoEstudiante').val('');
+  $('#nombreEstudiante').val('');
+  $('#notaEstudiante').val('');
+}
 
 function validar(formulario) {
-
-    limpiarErrores();
+  limpiarErrores();
 
     if (formulario.codigoEstudiante.value.trim().length == 0) {
-      // document.getElementById('error-codigo').innerHTML = "Debe completar este campo";
-      $('#error-codigo').html('Debe completar este campo');
-      //formulario.codigoEstudiante.focus();
-      $('#codigoEstudiante').focusin(function() {
-        $(this).find('span').css('display','inline').fadeOut(3000);
-        $(this).find('span').css('color','red');
-      })
+      document.getElementById('error-codigo').innerHTML = "Debe completar este campo";
+      formulario.codigoEstudiante.focus();
       return false;
     }
     if (formulario.codigoEstudiante.value.trim().length !== 3) {
@@ -61,55 +56,52 @@ function validar(formulario) {
       formulario.notaEstudiante.focus();
       return false;
     }
-    //mostrarTabla();
     nuevoEstudiante();
-    //limpiarInputs();
+    limpiarInputs();
     return true;
 }
 
 function mostrarTabla() {
-  var cuerpoTabla = $('#estudiante-tabla');
-  var tablaCompleta = "";
-  for (var i = 0; i < localStorage.length; i++) {
-    var clave = localStorage.key(i);
-    var estudianteJS = $.parseJSON(localStorage.getItem(clave));
-    tablaCompleta += "<tr>";
-    tablaCompleta += "<td>"+estudianteJS.codigo+"</td>";
-    tablaCompleta += "<td>"+estudianteJS.nombre+"</td>";
-    tablaCompleta += "<td id='nota-"+(i+1)+"'>"+estudianteJS.nota+"</td>";
-    tablaCompleta += "<td><button onclick='editarEstudiante("+estudianteJS.codigo+")'>Editar</button></td>";
-    tablaCompleta += "<td><button onclick='eliminarEstudiante(\'"+estudianteJS.codigo+"\')'>Eliminar</button></td>";
-    tablaCompleta += "</tr>";
+  let cuerpoTabla = $('#estudiante-tabla');
+  let tablaCompleta = "";
+  $('#codigoEstudiante').focus();
+
+  for (let i = 0; i < localStorage.length; i++) {
+    let clave = localStorage.key(i);
+    let estudiante = $.parseJSON(localStorage.getItem(clave));
+    estudiantes.push(estudiante);
+
+    tablaCompleta += '<tr>';
+    tablaCompleta += '<td>'+estudiante.codigo+'</td>';
+    tablaCompleta += '<td>'+estudiante.nombre+'</td>';
+    tablaCompleta += '<td id="nota-'+(i+1)+'">'+estudiante.nota+'</td>';
+    tablaCompleta += '<td><button onclick="editarEstudiante(\''+estudiante.codigo+'\');">Editar</button></td>';
+    tablaCompleta += '<td><button onclick="eliminarEstudiante(\''+estudiante.codigo+'\');">Eliminar</button></td>';
+    tablaCompleta += '</tr>';
   }
   $(cuerpoTabla).html(tablaCompleta);
 }
 
 function nuevoEstudiante() {
   event.preventDefault();
-  var codigo = $('#codigoEstudiante').val();
-  var nombre = $('#nombreEstudiante').val();
-  var nota = $('#notaEstudiante').val();
-  var nuevoEstudiante = {
+  let codigo = $('#codigoEstudiante').val();
+  let nombre = $('#nombreEstudiante').val();
+  let nota = $('#notaEstudiante').val();
+
+  let nuevoEstudiante = {
     codigo: codigo,
     nombre: nombre,
     nota: nota
   };
-  var busqueda = codigo;
-  var indice = estudiante.findIndex(registro => registro.codigo === busqueda);
-  if (indice != -1) {
-    alert("El código de estudiante ya existe!");
-  } else {
-    localStorage.setItem(codigo, JSON.stringify(nuevoEstudiante));
-    estudiante.push(nuevoEstudiante);
-    mostrarTabla();
-    limpiarErrores();
-    limpiarInputs();
-  }
+
+  localStorage.setItem(codigo,JSON.stringify(nuevoEstudiante));
+  mostrarTabla();
+  limpiarInputs();
 }
 
 function limpiarErrores() {
-  var errores = $('.text-danger');
-  for (var i = 0; i < errores.length; i++) {
+  let errores = $('.text-danger');
+  for (let i = 0; i < errores.length; i++) {
     $(errores).val('');
   }
 }
@@ -122,15 +114,62 @@ function limpiarInputs() {
 
 // ■■■■■■■■■■■■■■■■■■■■■■■■■■    Editar | Eliminar    ■■■■■■■■■■■■■■■■■■■■■■■■■■
 
-// tablaCompleta += "<td><button onclick='editarEstudiante("+estudianteJS.codigo+")'>Editar</button></td>";
 function editarEstudiante(codigo) {
-  for (var i = 0; i < localStorage.length; i++) {
-    var clave = localStorage.key(i);
+  $('#nombreEstudiante').focus();
+
+  for (let i = 0; i < localStorage.length; i++) {
+    let clave = localStorage.key(i);
     if (clave == codigo) {
-      var estud = $.parseJSON(localStorage.getItem(clave));
-      $('#codigoEstudiante').val(estud.codigo);
-      $('#nombreEstudiante').val(estud.nombre);
-      $('#notaEstudiante').val(estud.nota);
+      let estudiante = $.parseJSON(localStorage.getItem(clave));
+      $('#codigoEstudiante').val(estudiante.codigo);
+      $('#nombreEstudiante').val(estudiante.nombre);
+      $('#notaEstudiante').val(estudiante.nota);
     }
   }
+}
+
+function eliminarEstudiante(codigo) {
+  localStorage.removeItem(codigo);
+  $('#codigoEstudiante').focus();
+  mostrarTabla();
+}
+
+// ■■■■■■■■■■■■■■■■■■■■■■■■■■    Promedio | Nota Mayor | Nota Menor    ■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+function promedio() {
+  var suma = 0;
+
+  for (let i = 0; i < localStorage.length; i++) {
+    suma = suma + parseFloat($('#nota-'+(i+1)).text());
+  }
+  let prom = parseFloat(suma / localStorage.length);
+  if (prom) {
+    alert("Promedio estudiantes: " + prom);
+  } else {
+    alert("No existen notas para sacar un promedio.");
+  }
+}
+
+function notaMayor() {
+  let numeroMayor = parseFloat($('#nota-1').text());
+
+  for (let i = 0; i < localStorage.length; i++) {
+    let numeroComp = parseFloat($('#nota-'+(i+1)).text());
+    if (numeroComp > numeroMayor) {
+      numeroMayor = numeroComp;
+    }
+  }
+  alert('La nota mayor es : ' + numeroMayor);
+}
+
+function notaMenor() {
+  let numeroMenor = parseFloat($('#nota-1').text());
+
+  for (let i = 0; i < localStorage.length; i++) {
+    let numeroComp = parseFloat($('#nota-'+(i+1)).text());
+    if (numeroComp < numeroMenor) {
+      numeroMenor = numeroComp;
+    }
+  }
+  alert('La nota menor es : ' + numeroMenor);
 }
